@@ -63,7 +63,6 @@ async def test_login_controller_success(create_data_in_database, Oauth2Form):
     assert response.status_code == 200 
     assert content["status"] == "success"
     assert "access_token" in content
-    assert "access_token" in content
     
 
 @pytest.mark.asyncio

@@ -36,6 +36,7 @@ async def add_user_controller(request: AddUserRequest) -> JSONResponse:
         )
         
         #Proceso de almacenamiento en DDBB
+        client = await db.create_client()
         await db.add_user(client, request.user)
         
         return JSONResponse(
@@ -53,7 +54,8 @@ async def add_user_controller(request: AddUserRequest) -> JSONResponse:
             detail= {
                 "status": "error",
                 "data": {"user": response_user.model_dump()},
-                "message": "El 'email' o 'username' ya existen para otro usuario."
+                "message": "El 'email' o 'username' ya existen para otro usuario.",
+                "error detail" : error
             }
         )
     finally:
@@ -95,7 +97,7 @@ async def delete_user_controller(request: DeleteUserRequest) -> JSONResponse:
     try:
         client = await db.create_client()
         #Validacion de username existente
-        exist_user = await db.exists_username(client, request.username)
+        exist_user = await db.exists_username(client, request.username) #El metodo cierra la conexion del cliente
         
         if not exist_user:
             raise HTTPException(
@@ -108,6 +110,7 @@ async def delete_user_controller(request: DeleteUserRequest) -> JSONResponse:
         )   
             
         #Proceso de eliminacion de usuario
+        client = await db.create_client() #Nuevo cliente
         await db.delete_user(client, request.username)
         return JSONResponse(
             status_code= status.HTTP_200_OK,
@@ -131,40 +134,42 @@ async def delete_user_controller(request: DeleteUserRequest) -> JSONResponse:
         await client.close()
         
 async def update_user_controller(request: UpdateUserRequest) -> JSONResponse:
+    
     client = await db.create_client()
-    
-    #Validacion de existencia de usuario a actualizar
-    exist_user = await db.exists_username(client, request.username)
-    
-    if not exist_user:
-        await client.close()
-        raise HTTPException(
-            status_code= status.HTTP_404_NOT_FOUND,
-            detail= {
-                "status": "error",
-                "data": {"username": request.username},
-                "message": "El 'username' no existe."
-            }
-        )
-    
-    #Validaciones de unicidad de datos del usuario actualizado
-    unique = await db.is_unique(client, request.updated_user, for_update_user= True)
-    if not unique:
-        await client.close()
-        raise HTTPException(
-            status_code= status.HTTP_409_CONFLICT,
-            detail= {
-                "status": "error",
-                "data": {"username": request.username},
-                "message": "El 'email' y/o 'username' ya existen para otro usuario."
-            }
-        )
-    
     try:
+    
+        #Validacion de existencia de usuario a actualizar
+        exist_user = await db.exists_username(client, request.username) #Cierra el cliente, por lo que se vuelve a iniciar uno nuevo
+        
+        if not exist_user:
+            raise HTTPException(
+                status_code= status.HTTP_404_NOT_FOUND,
+                detail= {
+                    "status": "error",
+                    "data": {"username": request.username},
+                    "message": "El 'username' no existe."
+                }
+            )
+        
+        #Validaciones de unicidad de datos del usuario actualizado
+        client = await db.create_client()
+        unique = await db.is_unique(client, request.updated_user, for_update_user= True)
+        if not unique:
+            raise HTTPException(
+                status_code= status.HTTP_409_CONFLICT,
+                detail= {
+                    "status": "error",
+                    "data": {"username": request.username},
+                    "message": "El 'email' y/o 'username' ya existen para otro usuario."
+                }
+            )
+    
+    
         #Hasheo de contraseña nueva
         request.updated_user.password = hs.hashed_password(request.updated_user.password)
         
         #Proceso de actualizacion del usuario en la base de datos  
+        client = await db.create_client()
         await db.update_user(
                 client= client, 
                 username= request.username, 
@@ -184,7 +189,8 @@ async def update_user_controller(request: UpdateUserRequest) -> JSONResponse:
             status_code= status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail= {
                 "status" : "error",
-                "message" : "Ocurrio un error al intentar actualizar el usuario."
+                "message" : "Ocurrio un error al intentar actualizar el usuario.",
+                "error details" : {error}
             }
         )
     finally:

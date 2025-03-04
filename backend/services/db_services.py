@@ -88,8 +88,6 @@ async def delete_user(client: Client, username: str) -> None:
     try:
         async with look:
             await client.execute("DELETE FROM user WHERE username = ?", [username])
-    except Exception as e:
-        print(e)
     finally:
         await client.close()
         
@@ -156,4 +154,4 @@ async def is_unique(client: Client, user: User, for_update_user: bool = False) -
             
             return len(result.rows) == 0 if not for_update_user else len(result.rows) == 1
         finally:
-            client.close()
+            await client.close()
