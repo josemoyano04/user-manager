@@ -1,5 +1,8 @@
 fastapi[standard]
-jwt
+pytest
+pytest-asyncio
+PyJWT
 dotenv
 bcrypt
-libsql_client
+libsql-client
+asyncio
