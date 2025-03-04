@@ -1,0 +1,6 @@
+fastapi[standard]
+pytest
+jwt
+dotenv
+bcrypt
+libsql_client
