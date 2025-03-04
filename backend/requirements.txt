@@ -1,0 +1,8 @@
+lsfastapi[standard]
+pytest
+pytest-asyncio
+PyJWT
+dotenv
+bcrypt
+libsql-client
+asyncio
