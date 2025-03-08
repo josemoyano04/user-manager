@@ -5,7 +5,6 @@ from models.user_db import UserDB
 from services import db_services as db, hashing_service as hs, db_clean_after_test as clean
 from models.request.add_user_request import AddUserRequest
 from models.request.update_user_request import UpdateUserRequest
-from models.request.delete_user_request import DeleteUserRequest
 
 #=======================================FIXTURES=======================================
 
@@ -45,9 +44,6 @@ def update_user_request(fake_user, updated_fake_user):
     return UpdateUserRequest(username= fake_user.username,
                              updated_user= updated_fake_user)
 
-@pytest.fixture(scope= "module")
-def delete_user_request(fake_user):
-    return DeleteUserRequest(username= fake_user.username)
 #=======================================TEST=======================================
 
 @pytest.mark.asyncio

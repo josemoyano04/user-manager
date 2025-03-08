@@ -3,7 +3,6 @@ from fastapi import APIRouter, Body, Depends
 from controllers import auth_controller as at
 from services.auth_services import oauth2_schema
 from models.request.add_user_request import AddUserRequest
-from models.request.delete_user_request import DeleteUserRequest
 from models.request.update_user_request import UpdateUserRequest
 
 router  = APIRouter(prefix= "/user", tags= ["User methods"])
@@ -20,8 +19,8 @@ async def register(request: AddUserRequest):
     return res
 
 @router.delete("/delete")
-async def delete(request: DeleteUserRequest, token: str = Depends(oauth2_schema)):
-    res = await c.delete_user_controller(request, token)
+async def delete(token: str = Depends(oauth2_schema)):
+    res = await c.delete_user_controller(token)
     return res
 
 

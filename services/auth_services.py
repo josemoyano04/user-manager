@@ -9,6 +9,7 @@ from errors.token_format_error import TokenFormatError
 from services import db_services as db, hashing_service as hs
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from typing import Union
 
 #========================================CONSTANTS================================================#
 #Carga de varibales de entorno.
@@ -78,20 +79,50 @@ def create_access_token(username: str) -> str:
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+def get_username_from_token(token: str) -> Union[str, None]:
+    """
+    Extrae el nombre de usuario de un token JWT.
+
+    Esta función decodifica el token JWT y devuelve el nombre de usuario contenido en el payload.
+
+    Args:
+        token (str): El token JWT del cual se extraerá el nombre de usuario.
+
+    Returns: 
+        str | None: El nombre de usuario si se encuentra, de lo contrario None.
+    """
+    try:
+        payload: dict = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        username = payload.get("sub", None)
+        return username if username else None
+    except Exception as e:
+        return None
+        
 async def validate_access_token(token: str) -> bool:
+    """
+    Valida un token de acceso JWT.
+
+    Esta función decodifica el token y verifica si el nombre de usuario asociado existe en la base de datos.
+    Tambien verifíca que el token no este expirado, y la firma del mismo.
+
+    Args:
+        token (str): El token JWT a validar.
+
+    Returns:
+        bool: Devuelve True si el token es válido y el usuario existe, de lo contrario False.
+    """
     try:
         payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
-        username = payload["sub"]
+        username = get_username_from_token(token)
 
         if username:
             client = await DB_CLIENT()
             return await db.exists_username(client, username)
         
-    except jwt.PyJWTError:
+    except (jwt.PyJWTError):
         return False
     except KeyError:
         return False
-
 
 async def get_current_user(token: str) -> UserDB: 
     """
@@ -137,7 +168,6 @@ async def get_current_user(token: str) -> UserDB:
     except jwt.InvalidTokenError:
         raise jwt.InvalidTokenError
         
-
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm) -> Token:
     """
     Maneja el proceso de inicio de sesión y devuelve un token de acceso.

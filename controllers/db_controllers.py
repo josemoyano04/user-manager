@@ -1,13 +1,12 @@
+from models.user_db import User
 import services.db_services as db
 import services.hashing_service as hs
-from services.auth_services import validate_access_token
-from models.user_db import User
 from libsql_client import LibsqlError
-from fastapi.responses import JSONResponse
 from fastapi import status, HTTPException
-from models.request.delete_user_request import DeleteUserRequest
-from models.request.update_user_request import UpdateUserRequest 
+from fastapi.responses import JSONResponse
 from models.request.add_user_request import AddUserRequest
+from models.request.update_user_request import UpdateUserRequest 
+from services.auth_services import validate_access_token, get_username_from_token
 
 
 #CONTROLADORES NECESARIOS
@@ -93,8 +92,9 @@ async def get_user_controller(username: str) -> JSONResponse:
     finally:
         await client.close()
 
-async def delete_user_controller(request: DeleteUserRequest, token: str) -> JSONResponse: 
+async def delete_user_controller(token: str) -> JSONResponse: 
     
+    #Validaciones de token
     if not await validate_access_token(token):
         raise HTTPException(
             status_code= status.HTTP_401_UNAUTHORIZED,
@@ -103,37 +103,43 @@ async def delete_user_controller(request: DeleteUserRequest, token: str) -> JSON
                 "message" : "Usuario no autenticado."
             })
     
-    try:      
-        #Proceso de eliminacion de usuario
-        client = await db.create_client() #Nuevo cliente
-        if not await db.exists_username(client, request.username):
-            raise HTTPException(
-                status_code= status.HTTP_404_NOT_FOUND,
-                detail= {
-                "status" : "error",
-                "message" : "'username' no coincide con ningun usuario."
-            })
-        
+    #Obtencion de username guardado en el token
+    username = get_username_from_token(token)
+    
+    try:
+        #Proceso de eliminacion de usuario 
         client = await db.create_client()
-        await db.delete_user(client, request.username)
+        await db.delete_user(client, username)
+        
         return JSONResponse(
             status_code= status.HTTP_200_OK,
             content= {
                 "status" : "success",
-                "data" : request.username,
-                "message" : f"Usuario '{request.username}' eliminado con exito."
+                "data" : username,
+                "message" : f"Usuario '{username}' eliminado con exito."
             }
         )
     
-    except LibsqlError:
-        raise HTTPException(
-            status_code= status.HTTP_409_CONFLICT,
-            detail= {
-                "status": "error",
-                "data": {"username": request.username},
-                "message": "El 'username' no existe."
-            }
-        )
+    except LibsqlError as e:
+        msg = ["no existe", "not exists"]
+        if any(message in str(e) for message in msg):
+            raise HTTPException(
+                status_code= status.HTTP_409_CONFLICT,
+                detail= {
+                    "status": "error",
+                    "data": {"username": username},
+                    "message": f"Error. El username '{username}' no existe en la base de datos."
+                }
+            )
+        else:
+            raise HTTPException(
+                status_code= status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail= {
+                    "status": "error",
+                    "data": {"username": username},
+                    "message": f"Error interno del servidor."
+                }
+            )
     finally:
         await client.close()
         
