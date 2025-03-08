@@ -16,8 +16,11 @@ DOTENV_URL = find_dotenv("../.env")
 load_dotenv(DOTENV_URL)
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXIPIRE_MINUTES"))
-TOKEN_TYPE = "Bearer"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES"))
+print(SECRET_KEY)
+print(ALGORITHM)
+print(ACCESS_TOKEN_EXPIRE_MINUTES)
+TOKEN_TYPE = "Bearer" 
 
 #Constantes de servicio de base de datos.
 DB_CLIENT = db.create_client
@@ -74,6 +77,21 @@ def create_access_token(username: str) -> str:
     # Creación de JWT    
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+async def validate_access_token(token: str) -> bool:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, ALGORITHM)
+        username = payload["sub"]
+
+        if username:
+            client = await DB_CLIENT()
+            return await db.exists_username(client, username)
+        
+    except jwt.PyJWTError:
+        return False
+    except KeyError:
+        return False
+
 
 async def get_current_user(token: str) -> UserDB: 
     """

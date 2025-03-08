@@ -13,8 +13,3 @@ oauth2 = OAuth2PasswordBearer(tokenUrl= "/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     res = await at.login_for_access_token_controller(form_data)
     return res
-
-@router.get("/user/me")
-async def get_users_me(token: str = Depends(oauth2_schema)):
-    res = await at.get_current_user_controller(token)
-    return res

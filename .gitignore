@@ -3,6 +3,7 @@
 env/
 vscode/
 .pytest_cache/
+database-local-dev/
 
 **/__pycache__/
 

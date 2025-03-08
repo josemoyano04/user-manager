@@ -1,6 +1,7 @@
 import services.db_services as db
 import services.hashing_service as hs
-from models.user_db import User, UserDB
+from services.auth_services import validate_access_token
+from models.user_db import User
 from libsql_client import LibsqlError
 from fastapi.responses import JSONResponse
 from fastapi import status, HTTPException
@@ -92,25 +93,28 @@ async def get_user_controller(username: str) -> JSONResponse:
     finally:
         await client.close()
 
-async def delete_user_controller(request: DeleteUserRequest) -> JSONResponse: 
+async def delete_user_controller(request: DeleteUserRequest, token: str) -> JSONResponse: 
     
-    try:
-        client = await db.create_client()
-        #Validacion de username existente
-        exist_user = await db.exists_username(client, request.username) #El metodo cierra la conexion del cliente
-        
-        if not exist_user:
-            raise HTTPException(
-            status_code= status.HTTP_409_CONFLICT,
+    if not await validate_access_token(token):
+        raise HTTPException(
+            status_code= status.HTTP_401_UNAUTHORIZED,
             detail= {
-                "status": "error",
-                "data": {"username": request.username},
-                "message": "El 'username' no existe."
-            }
-        )   
-            
+                "status" : "error",
+                "message" : "Usuario no autenticado."
+            })
+    
+    try:      
         #Proceso de eliminacion de usuario
         client = await db.create_client() #Nuevo cliente
+        if not await db.exists_username(client, request.username):
+            raise HTTPException(
+                status_code= status.HTTP_404_NOT_FOUND,
+                detail= {
+                "status" : "error",
+                "message" : "'username' no coincide con ningun usuario."
+            })
+        
+        client = await db.create_client()
         await db.delete_user(client, request.username)
         return JSONResponse(
             status_code= status.HTTP_200_OK,
@@ -133,24 +137,17 @@ async def delete_user_controller(request: DeleteUserRequest) -> JSONResponse:
     finally:
         await client.close()
         
-async def update_user_controller(request: UpdateUserRequest) -> JSONResponse:
+async def update_user_controller(request: UpdateUserRequest, token: str) -> JSONResponse:
     
-    client = await db.create_client()
-    try:
-    
-        #Validacion de existencia de usuario a actualizar
-        exist_user = await db.exists_username(client, request.username) #Cierra el cliente, por lo que se vuelve a iniciar uno nuevo
-        
-        if not exist_user:
-            raise HTTPException(
-                status_code= status.HTTP_404_NOT_FOUND,
-                detail= {
-                    "status": "error",
-                    "data": {"username": request.username},
-                    "message": "El 'username' no existe."
-                }
-            )
-        
+    if not await validate_access_token(token):
+        raise HTTPException(
+            status_code= status.HTTP_401_UNAUTHORIZED,
+            detail= {
+                "status" : "error",
+                "message" : "Usuario no autenticado."
+            })
+
+    try:    
         #Validaciones de unicidad de datos del usuario actualizado
         client = await db.create_client()
         unique = await db.is_unique(client, request.updated_user, for_update_user= True)
@@ -160,7 +157,7 @@ async def update_user_controller(request: UpdateUserRequest) -> JSONResponse:
                 detail= {
                     "status": "error",
                     "data": {"username": request.username},
-                    "message": "El 'email' y/o 'username' ya existen para otro usuario."
+                    "message": "Datos no actualizados. El 'email' y/o 'username' ya existen para otro usuario."
                 }
             )
     
