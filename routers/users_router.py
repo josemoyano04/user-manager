@@ -6,7 +6,8 @@ from models.request.add_user_request import AddUserRequest
 from models.request.delete_user_request import DeleteUserRequest
 from models.request.update_user_request import UpdateUserRequest
 
-router  = APIRouter(prefix= "/user")
+router  = APIRouter(prefix= "/user", tags= ["User methods"])
+
 
 @router.get("/me")
 async def get_users_me(token: str = Depends(oauth2_schema)):
