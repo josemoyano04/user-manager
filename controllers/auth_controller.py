@@ -1,13 +1,14 @@
 from fastapi.responses import JSONResponse
+from adapters.database_connection import DatabaseConnection
 from errors.token_format_error import TokenFormatError
 from services import auth_services as at
-from fastapi import HTTPException, status, Depends
-from models.responses.token_response import Token
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from errors.users_errors import UserNotFoundError, UsernameNotFoundError
 from jwt import InvalidTokenError, ExpiredSignatureError 
 
-async def login_for_access_token_controller(form_data: OAuth2PasswordRequestForm) -> JSONResponse:
+#TODO documentar
+async def login_for_access_token_controller(db_conn: DatabaseConnection, form_data: OAuth2PasswordRequestForm) -> JSONResponse:
     """
     Controlador para el inicio de sesión y obtención de un token de acceso.
 
@@ -36,7 +37,7 @@ async def login_for_access_token_controller(form_data: OAuth2PasswordRequestForm
     )
     
     try:
-        token = await at.login_for_access_token(form_data)
+        token = await at.login_for_access_token(db_conn= db_conn, form_data= form_data)
 
         response = JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -54,8 +55,7 @@ async def login_for_access_token_controller(form_data: OAuth2PasswordRequestForm
     except UserNotFoundError as e:
         raise credential_exception
 
-
-async def get_current_user_controller(token: str) -> JSONResponse:
+async def get_current_user_controller(db_conn: DatabaseConnection, token: str) -> JSONResponse:
     """
     Controlador para obtener la información del usuario actual a partir de un token.
 
@@ -72,7 +72,7 @@ async def get_current_user_controller(token: str) -> JSONResponse:
         HTTPException: Si el usuario no se encuentra o si hay un problema con el token.
     """
     try:
-        user = await at.get_current_user(token)
+        user = await at.get_current_user(db_conn= db_conn, token= token)
         
         response = JSONResponse(
             status_code=status.HTTP_200_OK,

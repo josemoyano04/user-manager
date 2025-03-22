@@ -1,7 +1,10 @@
 from fastapi import FastAPI
+from utils.env_loader import EnvManager
 from fastapi.middleware.cors import CORSMiddleware
+from adapters.adapter_db_conn_libsql import AdapterDBConnLibsqlClient
 from routers import authentication_routers as atr, users_router as ur
 
+#====================APP====================
 app = FastAPI(
     title= "User Manager API", 
     version= "0.0.1",

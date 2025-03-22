@@ -1,36 +1,31 @@
-import os
 import jwt
 from models.user_db import UserDB
-from dotenv import load_dotenv, find_dotenv
+from utils.env_loader import EnvManager
 from errors.users_errors import UserNotFoundError
 from models.responses.token_response import Token
-from errors.users_errors import UserNotFoundError, UsernameNotFoundError
-from errors.token_format_error import TokenFormatError
-from services import db_services as db, hashing_service as hs
 from datetime import datetime, timedelta, timezone
+from errors.token_format_error import TokenFormatError
+from adapters.database_connection import DatabaseConnection
+from services import db_services as db, hashing_service as hs
+from errors.users_errors import UserNotFoundError, UsernameNotFoundError
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from typing import Union
 
 #========================================CONSTANTS================================================#
-#Carga de varibales de entorno.
-DOTENV_URL = find_dotenv("../.env")
-load_dotenv(DOTENV_URL)
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = os.getenv("JWT_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES"))
-print(SECRET_KEY)
-print(ALGORITHM)
-print(ACCESS_TOKEN_EXPIRE_MINUTES)
+ENV = EnvManager()
+
+SECRET_KEY = ENV.get("JWT_SECRET_KEY")
+ALGORITHM = ENV.get("JWT_ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(ENV.get("JWT_EXPIRE_MINUTES"))
+
 TOKEN_TYPE = "Bearer" 
 
-#Constantes de servicio de base de datos.
-DB_CLIENT = db.create_client
 
 #Schema
-oauth2_schema = OAuth2PasswordBearer(tokenUrl= "/login")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl= "/")
 
+#TODO Actualizar documentación.
 #========================================SERVICES================================================#
-async def authenticate_user(username: str, password: str) -> bool:
+async def authenticate_user(db_conn: DatabaseConnection, username: str, password: str) -> bool:
     """
     Verifica las credenciales del usuario.
 
@@ -47,14 +42,16 @@ async def authenticate_user(username: str, password: str) -> bool:
     Returns:
         bool: Devuelve True si las credenciales son válidas, de lo contrario, devuelve False.
     """
-    db_client = await DB_CLIENT()
-    user: UserDB = await db.get_user(db_client, username, hidden_password=True)
+
+    user: UserDB = await db.get_user(db_conn= db_conn, 
+                                     username= username, 
+                                     visible_password= True)
     
     if not user:
         raise UserNotFoundError("Usuario no encontrado.")
     
     validated = hs.validate_password(password=password,
-                                      hashed_password=user.password)
+                                     hashed_password=user.password)
     
     return validated
 
@@ -79,7 +76,7 @@ def create_access_token(username: str) -> str:
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_username_from_token(token: str) -> Union[str, None]:
+def get_username_from_token(token: str) -> str | None:
     """
     Extrae el nombre de usuario de un token JWT.
 
@@ -98,7 +95,7 @@ def get_username_from_token(token: str) -> Union[str, None]:
     except Exception as e:
         return None
         
-async def validate_access_token(token: str) -> bool:
+async def validate_access_token(db_conn: DatabaseConnection, token: str) -> bool:
     """
     Valida un token de acceso JWT.
 
@@ -116,15 +113,14 @@ async def validate_access_token(token: str) -> bool:
         username = get_username_from_token(token)
 
         if username:
-            client = await DB_CLIENT()
-            return await db.exists_username(client, username)
+            return await db.exists_username(db_conn= db_conn, username= username)
         
     except (jwt.PyJWTError):
         return False
     except KeyError:
         return False
 
-async def get_current_user(token: str) -> UserDB: 
+async def get_current_user(db_conn: DatabaseConnection, token: str) -> UserDB: 
     """
     Recupera el usuario actual a partir de un token JWT.
 
@@ -142,7 +138,6 @@ async def get_current_user(token: str) -> UserDB:
     Returns:
         UserDB: El objeto de usuario correspondiente al nombre de usuario extraído del token.
     """
-    db_client = await DB_CLIENT()
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
@@ -150,10 +145,12 @@ async def get_current_user(token: str) -> UserDB:
         
         # Recuperación de username
         if not username:
-            raise UsernameNotFoundError("Username no encontrado.")
+            raise UsernameNotFoundError(f"Username no encontrado en el token.")
         
         # Recuperación de usuario en base de datos.
-        user = await db.get_user(db_client, username, hidden_password=True)
+        user = await db.get_user(db_conn= db_conn,
+                                 username= username, 
+                                 visible_password= True)
         
         if not user:
             raise UserNotFoundError("Usuario no encontrado.")
@@ -168,7 +165,7 @@ async def get_current_user(token: str) -> UserDB:
     except jwt.InvalidTokenError:
         raise jwt.InvalidTokenError
         
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm) -> Token:
+async def login_for_access_token(db_conn: DatabaseConnection, form_data: OAuth2PasswordRequestForm) -> Token:
     """
     Maneja el proceso de inicio de sesión y devuelve un token de acceso.
 
@@ -184,11 +181,19 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm) -> Token:
     Returns:
         Token: Un objeto que contiene el token de acceso y el tipo de token.
     """
-    user = await authenticate_user(username=form_data.username,
+    
+    
+    try:
+        authenticated_user = await authenticate_user(db_conn= db_conn,
+                                   username=form_data.username,
                                    password=form_data.password)
     
-    if not user:
-        raise UserNotFoundError(f"No se encontró el usuario con username: {form_data.username}")
+    except UsernameNotFoundError as e:
+        raise UsernameNotFoundError(str(e))
+    
+    
+    if not authenticated_user:
+        raise UserNotFoundError(f"No se autenticó el usuario con username:'{form_data.username}'")
 
     access_token = create_access_token(username=form_data.username)
     
