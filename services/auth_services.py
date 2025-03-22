@@ -33,8 +33,9 @@ async def authenticate_user(db_conn: DatabaseConnection, username: str, password
     y valida la contraseña proporcionada contra la contraseña almacenada.
 
     Args:
-        username (str): El nombre de usuario del usuario a autenticar.
-        password (str): La contraseña del usuario a autenticar.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        username (str): Nombre de usuario del usuario a autenticar.
+        password (str): Contraseña del usuario a autenticar.
 
     Raises:
         UserNotFoundError: Si no se encuentra un usuario con el nombre de usuario proporcionado.
@@ -62,10 +63,10 @@ def create_access_token(username: str) -> str:
     Esta función genera un token JWT que contiene el nombre de usuario y la fecha de expiración.
 
     Args:
-        username (str): El nombre de usuario para el cual se generará el token.
+        username (str): Nombre de usuario para el cual se generará el token.
 
     Returns:
-        str: El token de acceso JWT codificado.
+        str: Token de acceso JWT codificado.
     """
     # Data
     payload = {
@@ -83,10 +84,10 @@ def get_username_from_token(token: str) -> str | None:
     Esta función decodifica el token JWT y devuelve el nombre de usuario contenido en el payload.
 
     Args:
-        token (str): El token JWT del cual se extraerá el nombre de usuario.
+        token (str): Token JWT del cual se extraerá el nombre de usuario.
 
     Returns: 
-        str | None: El nombre de usuario si se encuentra, de lo contrario None.
+        str | None: Nombre de usuario si se encuentra, de lo contrario None.
     """
     try:
         payload: dict = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
@@ -103,7 +104,8 @@ async def validate_access_token(db_conn: DatabaseConnection, token: str) -> bool
     Tambien verifíca que el token no este expirado, y la firma del mismo.
 
     Args:
-        token (str): El token JWT a validar.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        token (str): Token JWT a validar.
 
     Returns:
         bool: Devuelve True si el token es válido y el usuario existe, de lo contrario False.
@@ -127,7 +129,8 @@ async def get_current_user(db_conn: DatabaseConnection, token: str) -> UserDB:
     Esta función decodifica el token JWT proporcionado y busca el usuario correspondiente en la base de datos.
 
     Args:
-        token (str): El token JWT del cual se extraerá el nombre de usuario.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        token (str): Token JWT del cual se extraerá el nombre de usuario.
 
     Raises:
         UserNotFoundError: Si no se encuentra un usuario con el nombre de usuario extraído del token.
@@ -136,7 +139,7 @@ async def get_current_user(db_conn: DatabaseConnection, token: str) -> UserDB:
         InvalidTokenError: Si el token está expirado. Pertenece al módulo jwt.
 
     Returns:
-        UserDB: El objeto de usuario correspondiente al nombre de usuario extraído del token.
+        UserDB: Objeto de usuario correspondiente al nombre de usuario extraído del token.
     """
     
     try:
@@ -173,13 +176,14 @@ async def login_for_access_token(db_conn: DatabaseConnection, form_data: OAuth2P
     y genera un token de acceso si las credenciales son válidas.
 
     Args:
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         form_data (OAuth2PasswordRequestForm): El formulario que contiene el nombre de usuario y la contraseña.
 
     Raises:
         UserNotFoundError: Si no se encuentra un usuario con el nombre de usuario proporcionado.
 
     Returns:
-        Token: Un objeto que contiene el token de acceso y el tipo de token.
+        Token: Objeto que contiene el token de acceso y el tipo de token.
     """
     
     

@@ -15,7 +15,7 @@ async def add_user(db_conn: DatabaseConnection, user: UserDB) -> None:
     Agrega un nuevo usuario a la base de datos.
 
     Args:
-        client (Client): El cliente de la base de datos.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         user (UserDB): El objeto UserDB que contiene la información del usuario a agregar.
     """
     try:
@@ -28,16 +28,16 @@ async def add_user(db_conn: DatabaseConnection, user: UserDB) -> None:
     finally:
         await db_conn.close()
 
-async def get_user(db_conn: DatabaseConnection, username: str, visible_password: bool = False) -> Union[User, UserDB, None]:
+async def get_user(db_conn: DatabaseConnection, username: str, visible_password: bool = False) -> User | UserDB | None:
     """
     Obtiene un usuario de la base de datos a partir de su nombre de usuario.
 
     Args:
-        client (Client): El cliente de la base de datos.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         username (str): El nombre de usuario del usuario a buscar.
-        hidden_password (bool): Flag para indicar si retornar el hashed_password del usuario.
+        visible_password (bool): Flag para indicar si retornar el hashed_password del usuario.
     Returns:
-        Union[User, UserDB, None]: Un objeto User si se encuentra el usuario, de lo contrario None y UserDB si hidden_password es True.
+        User | UserDB | None: Un objeto User si se encuentra el usuario, de lo contrario None y UserDB si hidden_password es True.
     """
     try:
         async with look:
@@ -63,8 +63,8 @@ async def delete_user(db_conn: DatabaseConnection, username: str) -> None:
     Elimina un usuario de la base de datos a partir de su nombre de usuario.
 
     Args:
-        client (Client): El cliente de la base de datos.
-        username (str): El nombre de usuario del usuario a eliminar.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        username (str): Nombre de usuario del usuario a eliminar.
     """
     try:
         async with look:
@@ -78,9 +78,9 @@ async def update_user(db_conn: DatabaseConnection, username: str, updated_user: 
     Actualiza la información de un usuario en la base de datos.
 
     Args:
-        client (Client): El cliente de la base de datos.
-        username (str): El nombre de usuario del usuario a actualizar.
-        updated_user (UserDB): El objeto UserDB que contiene la nueva información del usuario.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        username (str): Nombre de usuario del usuario a actualizar.
+        updated_user (UserDB): Objeto UserDB que contiene la nueva información del usuario.
     """
     try:
         async with look:
@@ -100,7 +100,7 @@ async def exists_username(db_conn: DatabaseConnection, username: str) -> bool:
     Verifica si el nombre de usuario exista en la base de datos.
 
     Args:
-        client (Client): Una instancia del cliente de base de datos que se utilizará para ejecutar la consulta.
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         username (str): Nombre de usuario a validar.
 
     Returns:
@@ -117,15 +117,15 @@ async def exists_username(db_conn: DatabaseConnection, username: str) -> bool:
         await db_conn.close()
         
 async def is_unique(db_conn: DatabaseConnection, user: User, for_update_user: bool = False) -> bool:
-    async with look:
         """
         Verifica la existencia de un usuario en la base de datos basado en el nombre de usuario y el correo electrónico.
 
         Args:
-            client (Client): Una instancia del cliente de base de datos que se utilizará para ejecutar la consulta.
+            db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
             user (User): Un objeto que contiene el nombre de usuario y el correo electrónico a verificar.
-            for_update_user (bool): Un indicador que determina si se está verificando para actualizar un usuario existente. Si se indica como 'True',
-                se ajusta la consulta para aceptar al menos una fila, la cual es resultante del usuario existente a actualizar.
+            for_update_user (bool): Un indicador que determina si se está verificando para actualizar un usuario 
+                existente. Si se indica como 'True', se ajusta la consulta para aceptar al menos una fila, la cual
+                es resultante del usuario existente a actualizar.
 
         Returns:
             bool: Devuelve True si el nombre de usuario y el correo electrónico son únicos (no existen en la base de datos)
@@ -133,10 +133,11 @@ async def is_unique(db_conn: DatabaseConnection, user: User, for_update_user: bo
                 Devuelve False en caso contrario.
         """
         try:
-            await db_conn.connect()
-            result = await db_conn.execute("SELECT * FROM user WHERE username = ? OR email = ?;", 
-                                        [user.username, user.email])
-            
-            return len(result) == 0 if not for_update_user else len(result) == 1
+            async with look:
+                await db_conn.connect()
+                result = await db_conn.execute("SELECT * FROM user WHERE username = ? OR email = ?;", 
+                                            [user.username, user.email])
+                
+                return len(result) == 0 if not for_update_user else len(result) == 1
         finally:
             await db_conn.close()

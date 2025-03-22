@@ -16,6 +16,7 @@ async def login_for_access_token_controller(db_conn: DatabaseConnection, form_da
     OAuth2 y, si son válidas, devuelve un token de acceso en formato JSON.
 
     Args:
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         form_data (OAuth2PasswordRequestForm): Datos del formulario que contienen
         el nombre de usuario y la contraseña.
 
@@ -63,6 +64,7 @@ async def get_current_user_controller(db_conn: DatabaseConnection, token: str) -
     asociado a ese token en formato JSON.
 
     Args:
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
         token (str): El token de acceso del usuario.
 
     Returns:
