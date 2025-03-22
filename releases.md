@@ -31,3 +31,7 @@ asegurar una integridad más robusta del sistema.
 ### Corregido
 - Testing de funcionalidad faltantes
 
+## [Versión 0.1.0] - 2025-03-22
+
+### Corregido
+- Error por acoplamiendo de EnvLoader con .env.
