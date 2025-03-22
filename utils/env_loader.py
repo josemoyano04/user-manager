@@ -11,21 +11,23 @@ class EnvManager:
         return cls.__instance
 
     def __init__(self):
-        if not hasattr(self, "__initialized"):
-            self.__initialized = True
+        if not hasattr(self, "_initialized"):
+            self._initialized = True
             
-            ENV_PATH = dotenv.find_dotenv(".env")  
+            ENV_PATH = dotenv.find_dotenv(".env")
+              
+            if ENV_PATH:
+                print(f"Archivo .env cargado desde: {ENV_PATH}")
+                dotenv.load_dotenv(ENV_PATH) 
+            else:
+                print("No se encontró un archivo .env. Usando variables de entorno del sistema.")
+        
+            
             if not ENV_PATH:
                 raise FileNotFoundError(f"No se encontró el archivo .env en la ruta especificada.")
             
-            dotenv.load_dotenv(ENV_PATH) 
-            
-            self.__env_variables = { 
-                                    key: value for 
-                                    key, value in 
-                                    os.environ.items() 
-                                    if key in dotenv.dotenv_values(ENV_PATH)
-                                  }
+            self.__env_variables = { key: os.getenv(key) for key in os.environ.keys() }
+
 
 
     def get(self, key: str, default=None):
