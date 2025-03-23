@@ -21,13 +21,11 @@ class EnvManager:
                 dotenv.load_dotenv(ENV_PATH) 
             else:
                 print("No se encontró un archivo .env. Usando variables de entorno del sistema.")
-        
-            
-            if not ENV_PATH:
-                raise FileNotFoundError(f"No se encontró el archivo .env en la ruta especificada.")
-            
-            self.__env_variables = { key: os.getenv(key) for key in os.environ.keys() }
 
+            try:
+                self.__env_variables = { key: os.getenv(key) for key in os.environ.keys() }
+            except Exception as error:
+                print(f"Ocurrió un error. Detalle: {str(error)}")
 
 
     def get(self, key: str, default=None):
