@@ -23,7 +23,7 @@ TOKEN_TYPE = "Bearer"
 #Schema
 oauth2_schema = OAuth2PasswordBearer(tokenUrl= "/")
 
-#TODO Actualizar documentación.
+
 #========================================SERVICES================================================#
 async def authenticate_user(db_conn: DatabaseConnection, username: str, password: str) -> bool:
     """

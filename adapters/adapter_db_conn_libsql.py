@@ -49,7 +49,7 @@ class AdapterDBConnLibsqlClient(DatabaseConnection):
         """
         if self.current_client is None:
             try:
-                self.current_client = await lb.create_client(url=self.database_url,
+                self.current_client = lb.create_client(url=self.database_url,
                                                             auth_token=self.auth_token,
                                                             tls=self.tls)
             except Exception as error:

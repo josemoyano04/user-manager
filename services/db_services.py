@@ -4,7 +4,6 @@ from models.user_db import User, UserDB
 from typing import Union
 
 
-#TODO actualizar documentacion
 # Bloqueo para controlar concurrencia de conexiones.
 look = asyncio.locks.Lock()
 
@@ -45,7 +44,7 @@ async def get_user(db_conn: DatabaseConnection, username: str, visible_password:
             result = await db_conn.execute("""SELECT full_name, username, email, hashed_password
                                         FROM user WHERE username = ?;""", [username])
             
-            row = result[0] if len(result) == 1 else None #TODO mejorar logica de recuperacion de usuario.
+            row = result[0] if len(result) == 1 else None 
             
             if row:
                 user_data = {"full_name": row[0], "username": row[1], "email": row[2]}

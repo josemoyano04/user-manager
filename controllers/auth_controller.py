@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from errors.users_errors import UserNotFoundError, UsernameNotFoundError
 from jwt import InvalidTokenError, ExpiredSignatureError 
 
-#TODO documentar
+
 async def login_for_access_token_controller(db_conn: DatabaseConnection, form_data: OAuth2PasswordRequestForm) -> JSONResponse:
     """
     Controlador para el inicio de sesión y obtención de un token de acceso.
