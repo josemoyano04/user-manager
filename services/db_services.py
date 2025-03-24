@@ -1,7 +1,6 @@
 import asyncio
 from adapters.database_connection import DatabaseConnection
 from models.user_db import User, UserDB
-from typing import Union
 
 
 # Bloqueo para controlar concurrencia de conexiones.

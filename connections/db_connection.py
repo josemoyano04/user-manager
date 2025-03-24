@@ -1,4 +1,3 @@
-# DATABASE CONNECTION CONSTANTS
 from utils.env_loader import EnvManager
 from adapters.adapter_db_conn_libsql import AdapterDBConnLibsqlClient
 

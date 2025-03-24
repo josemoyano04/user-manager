@@ -22,6 +22,17 @@ User Manager es una API para gestionar usuarios. Permite crear, editar, eliminar
 
 ---
 
+## Tecnologías
+- **Lenguaje de programación:** Python
+- **Framework web:** FastAPI
+- **Base de datos:** SQLite (por defecto)
+- **Autenticación y autorización:** JSON Web Token (JWT)
+- **Gestión de dependencias:** pip
+- **Pruebas:** pytest
+- **Control de versiones:** Git
+- **Documentación de API:** OpenAPI (generada por FastAPI)
+
+
 ## Instalación y configuración del backend
 
 ### Instalación
@@ -108,10 +119,11 @@ Documentación generada por FastAPI usando OpenAPI: [Documentación](https://use
 >**NOTA:** Si realiza modificaciones, puede ver la documentación actualizada en tiempo real ejecutando la aplicación con `python -m fastapi dev main.py` y accediendo a la ruta [http://127.0.0.1:8000](http://127.0.0.1:8000/docs)
 
 ### Ejemplos de uso
-#### Agregar un usuario:
+
+#### Agregar un usuario:  /user/register
 ```javascript
 //Javascript
-//Modificar con URL de la API desplegada para uso en produccion
+//Modificar con URL de la API desplegada para uso en producción
 const API_URL = "http://127.0.0.1:8000";
 const ENDPOINT = "/user/register";
 fetch(`${API_URL}${ENDPOINT}`, {
@@ -136,10 +148,29 @@ fetch(`${API_URL}${ENDPOINT}`, {
 
 ```
 
-#### Loguear usuario (Obtención de JSON Web Token):
+##### Respuesta OK:
+```json
+{
+  "status": "success",
+  "data": {
+    "user": {
+      "full_name": "example",
+      "username": "example",
+      "email": "example@example.com"
+    }
+  },
+  "message": "Usuario registrado correctamente."
+}
+```
+
+##### Descripcion de codigos de error:
+- **409 - Conflict**: El usuario que intenta agregar tiene el username o email ya registrado para otro usuario.
+- **500 - Internal Server Error**: Error del lado del servidor. Crear un issue reportando el error para solucionarlo lo más pronto posible.
+
+#### Inicio de sesión de usuario (Obtención de JSON Web Token): /login
 ```javascript
 //Javascript
-//Modificar con URL de la API desplegada para uso en produccion
+//Modificar con URL de la API desplegada para uso en producción
 const API_URL = "http://127.0.0.1:8000"
 const ENDPOINT = "/login"
 
@@ -165,10 +196,23 @@ fetch(`${API_URL}${ENDPOINT}`, {
 
 ```
 
-#### Recuperar datos del usuario:
+##### Respuesta OK:
+```json
+{
+  "status": "success",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJleGFtcGxlIiwiZXhwIjoxNzQyODY0OTk1fQ.db3VJJtciotJmgEE4f6jUDzCzolgLJ9ng_2X-DwI0FQ",
+  "token_type": "Bearer"
+}
+```
+
+##### Descripción de códigos de error:
+- **401 - Unauthorized**: El username o password son incorrectos.
+- **500 - Internal Server Error**: Error del lado del servidor. Crear un issue reportando el error para solucionarlo lo más pronto posible.
+
+#### Recuperar datos del usuario: /user/me
 ```javascript
 //Javascript
-//Modificar con URL de la API desplegada para uso en produccion
+//Modificar con URL de la API desplegada para uso en producción
 const API_URL = "http://127.0.0.1:8000";
 const ENDPOINT = "/user/me";
 
@@ -187,10 +231,31 @@ fetch(`${API_URL}${ENDPOINT}`, {
     console.error('Error:', error);
 });
 ```
-#### Modificar datos del usuario:
+
+##### Respuesta OK:
+```json
+{
+  "status": "success",
+  "data": {
+    "full_name": "example",
+    "username": "example",
+    "email": "example@example.com",
+    "password": "$2b$12$XhjpCAjMyPqAn1.fs1KygexbqxjutGpzw9eA313cjXx5zkimQtC2K"
+  }
+}
+```
+
+##### Descripción de códigos de error:
+- **400 - Bad Request**: Token inválido por formato incorrecto o por expiración.
+- **401 - Unauthorized**: El token proporcionado tiene un formato incorrecto o está expirado.
+- **404 - Not Found**: El username no se encontró en la base de datos.
+- **500 - Internal Server Error**: Error del lado del servidor. Crear un issue reportando el error para solucionarlo lo más pronto posible.
+
+
+#### Modificar datos del usuario: /user/updated
 ```javascript
 //Javascript
-//Modificar con URL de la API desplegada para uso en produccion
+//Modificar con URL de la API desplegada para uso en producción
 const API_URL = "http://127.0.0.1:8000";
 const ENDPOINT = "/user/update";
 
@@ -220,10 +285,23 @@ fetch(`${API_URL}${ENDPOINT}`, {
 });
 ```
 
-#### Eliminar usuario:
+##### Respuesta OK:
+```json
+{
+  "status": "success",
+  "message": "Usuario actualizado con éxito."
+}
+```
+
+##### Descripción de códigos de error:
+- **401 - Unauthorized**: El token proporcionado tiene un formato incorrecto o está expirado.
+- **409 - Conflict**: El usuario que intenta agregar tiene el username o email ya registrado para otro usuario.
+- **500 - Internal Server Error**: Error del lado del servidor. Crear un issue reportando el error para solucionarlo lo más pronto posible.
+
+#### Eliminar usuario: /user/delete
 ```javascript
 //Javascript
-//Modificar con URL de la API desplegada para uso en produccion
+//Modificar con URL de la API desplegada para uso en producción
 const API_URL = "http://127.0.0.1:8000";
 const ENDPOINT = "/user/delete";
 
@@ -243,7 +321,22 @@ fetch(`${API_URL}${ENDPOINT}`, {
 });
 ```
 
+##### Response OK:
+```json
+{
+  "status": "success",
+  "data": "example",
+  "message": "Usuario 'example' eliminado con éxito."
+}
+```
+
+##### Descripción de códigos de error:
+- **401 - Unauthorized**: El token proporcionado tiene un formato incorrecto o está expirado.
+- **409 - Conflict**: El usuario que intenta agregar tiene el username o email ya registrado para otro usuario.
+- **500 - Internal Server Error**: Error del lado del servidor. Crear un issue reportando el error para solucionarlo lo más pronto posible.
+
 ---
+
 
 ## Configuracion de base de datos
 

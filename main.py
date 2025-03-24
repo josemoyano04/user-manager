@@ -7,7 +7,7 @@ from routers import authentication_routers as atr, users_router as ur
 #====================APP====================
 app = FastAPI(
     title= "User Manager API", 
-    version= "0.1.1", 
+    version= "0.1.2", 
     contact= {
         "name": "Jose Moyano",
         "url": "http://www.github.com/josemoyano04",

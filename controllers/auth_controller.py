@@ -3,7 +3,7 @@ from adapters.database_connection import DatabaseConnection
 from errors.token_format_error import TokenFormatError
 from services import auth_services as at
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from errors.users_errors import UserNotFoundError, UsernameNotFoundError
 from jwt import InvalidTokenError, ExpiredSignatureError 
 
