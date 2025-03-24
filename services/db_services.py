@@ -19,7 +19,7 @@ async def add_user(db_conn: DatabaseConnection, user: UserDB) -> None:
     """
     try:
         async with look:
-            
+            await db_conn.connect()
             await db_conn.execute(
                 "INSERT INTO user(full_name, username, email, hashed_password) VALUES (?, ?, ?, ?);",
                 [*user.model_dump().values()]
