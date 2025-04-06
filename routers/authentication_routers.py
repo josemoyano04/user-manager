@@ -3,7 +3,6 @@ from controllers import auth_controller as at
 from connections.db_connection import db_conn_libsql_client
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
-#DATABASE CONNECTION CONSTANTS
 DB_CONN = db_conn_libsql_client()
 
 router = APIRouter()

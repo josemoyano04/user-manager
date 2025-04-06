@@ -1,7 +1,7 @@
 import pytest
 from models.user_db import UserDB
 from adapters.adapter_db_conn_sqlite3_test import AdapterDBConnMemorySqlite3Test
-
+from services.hashing_service import hashed_password
 
 #==================== FIXTURES ====================
 @pytest.fixture(scope= 'module')
@@ -33,6 +33,18 @@ def user_fixture() -> UserDB:
         email= "test@example.com",
         password= "test"
     )
+
+@pytest.fixture(scope='module')
+def user_with_hashed_password_fixture() -> UserDB:
+    password_hashed = hashed_password("test")
+    return UserDB(
+        full_name= "test full name",
+        username= "test", 
+        email= "test@example.com",
+        password= password_hashed
+    )
+
+        
     
 @pytest.fixture(scope="module")
 def updated_user_fixture() -> UserDB:
