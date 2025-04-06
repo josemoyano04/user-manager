@@ -6,12 +6,6 @@ from models.user_db import UserDB
 from utils.env_loader import EnvManager
 from connections.db_connection import db_conn_libsql_client
 
-#DATABASE CONNECTION CONSTANTS
-ENV = EnvManager()
-
-DATABASE_URL = ENV.get("PRODUCTION_DATABASE_URL")
-DATABASE_AUTH_TOKEN = ENV.get("PRODUCTION_DATABASE_AUTH_TOKEN")
-
 DB_CONN = db_conn_libsql_client()
 
 router = APIRouter()

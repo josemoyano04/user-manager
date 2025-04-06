@@ -47,3 +47,13 @@ async def test_delete_user(database_mock, updated_user_fixture):
                        username= updated_user_fixture.username)
 
     assert user is None
+
+@pytest.mark.asyncio
+async def test_get_user_by_email(database_mock, user_fixture):
+    await db.add_user(db_conn= database_mock, user= user_fixture)
+
+    user = await db.get_user_by_email(db_conn= database_mock, email= user_fixture.email)
+    assert user is not None
+    
+    user2 = await db.get_user_by_email(db_conn= database_mock, email= "notExistEmail@example.com")
+    assert user2 is None

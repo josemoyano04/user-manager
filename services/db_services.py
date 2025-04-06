@@ -20,7 +20,7 @@ async def add_user(db_conn: DatabaseConnection, user: UserDB) -> None:
     """
     try:
         async with look:
-            
+            await db_conn.connect()
             await db_conn.execute(
                 "INSERT INTO user(full_name, username, email, hashed_password) VALUES (?, ?, ?, ?);",
                 [*user.model_dump().values()]
@@ -141,3 +141,33 @@ async def is_unique(db_conn: DatabaseConnection, user: User, for_update_user: bo
                 return len(result) == 0 if not for_update_user else len(result) == 1
         finally:
             await db_conn.close()
+
+async def get_user_by_email(db_conn: DatabaseConnection, email: str, visible_password: bool = False) -> Union[UserDB, None]:
+    """
+    Obtiene un usuario de la base de datos a partir de su correo electrónico.
+
+    Args:
+        db_conn (DatabaseConnection): Cliente de conexión a la base de datos.
+        email (str): El correo electrónico del usuario a buscar.
+
+    Returns:
+        UserDB | None: Un objeto UserDB si se encuentra el usuario, de lo contrario None.
+    """
+    try:
+        async with look:
+            await db_conn.connect()
+            result = await db_conn.execute(""" SELECT full_name, username, email, hashed_password
+                                               FROM user WHERE email = ?;""", [email])
+            
+            row = result[0] if len(result) == 1 else None
+            if row:
+                user_data = {"full_name": row[0], "username": row[1], "email": row[2]}
+                if visible_password:
+                    user_data["password"] = row[3]
+                    
+                    return UserDB(**user_data)
+                return User(**user_data)
+            return None
+    finally:
+        await db_conn.close()
+        
