@@ -142,7 +142,8 @@ async def is_unique(db_conn: DatabaseConnection, user: User, for_update_user: bo
         finally:
             await db_conn.close()
 
-async def get_user_by_email(db_conn: DatabaseConnection, email: str, visible_password: bool = False) -> Union[UserDB, None]:
+async def get_user_by_email(db_conn: DatabaseConnection, email: str, 
+                            visible_password: bool = False) -> Union[UserDB, User, None]:
     """
     Obtiene un usuario de la base de datos a partir de su correo electrónico.
 

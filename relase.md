@@ -31,3 +31,10 @@ asegurar una integridad más robusta del sistema.
 ### Corregido
 - Testing de funcionalidad faltantes
 
+## [Versión 0.2.0] - 2025-04-06
+### Añadido
+- Implementación de recuperación de contraseña mediante email.
+    - Implementación de un nuevo método para obtener el usuario a partir de su email.
+    - Implementación de un nuevo método para enviar un email al usuario con un token de recuperación
+    de contraseña.
+    - Implementación de un nuevo método para cambiar la contraseña del usuario a partir del token enviado luego de validar el código de recuperación.
