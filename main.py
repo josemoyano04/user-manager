@@ -8,7 +8,7 @@ from routers import authentication_routers as atr, users_router as ur, recovery_
 app = FastAPI(
     title= "User Manager API", 
     description= "API for user management, including authentication, registration, and password recovery.", 
-    version= "0.2.0",
+    version= "0.2.1",
     contact= {
         "name": "Jose Moyano",
         "url": "http://www.github.com/josemoyano04",
