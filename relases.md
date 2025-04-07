@@ -38,3 +38,7 @@ asegurar una integridad más robusta del sistema.
     - Implementación de un nuevo método para enviar un email al usuario con un token de recuperación
     de contraseña.
     - Implementación de un nuevo método para cambiar la contraseña del usuario a partir del token enviado luego de validar el código de recuperación.
+
+## [Versión 0.2.1] - 2025-04-07
+### Corregido
+- Error en la carga de .env
