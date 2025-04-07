@@ -116,12 +116,3 @@ async def updated_password_controller(db_conn: DatabaseConnection,
         }
     )
     
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code= status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail={
-    #             "status": "error",
-    #             "message": str(e)
-    #         }
-    #     )
-    
