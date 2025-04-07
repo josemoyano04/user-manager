@@ -15,18 +15,22 @@ class EnvManager:
             self.__initialized = True
             
             ENV_PATH = dotenv.find_dotenv(".env")  
-            if not ENV_PATH:
-                raise FileNotFoundError(f"No se encontró el archivo .env en la ruta especificada.")
             
-            dotenv.load_dotenv(ENV_PATH) 
-            
-            self.__env_variables = { 
-                                    key: value for 
-                                    key, value in 
-                                    os.environ.items() 
-                                    if key in dotenv.dotenv_values(ENV_PATH)
-                                  }
-
+            if ENV_PATH:
+                print(f"Archivo .env cargado desde: {ENV_PATH}")
+                dotenv.load_dotenv(ENV_PATH)
+            else:
+                print("Archivo .env no encontrado. Cargando variables de entorno del sistema.")
+    
+            try:        
+                self.__env_variables = { 
+                                        key: os.getenv(key) for 
+                                        key in 
+                                        os.environ.keys()
+                                        }
+            except Exception as e:
+                print(f"Error al cargar el archivo .env: {e}")
+                
 
     def get(self, key: str, default=None):
         """Obtiene una variable de entorno con una clave específica."""
