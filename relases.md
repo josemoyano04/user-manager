@@ -42,3 +42,7 @@ asegurar una integridad más robusta del sistema.
 ## [Versión 0.2.1] - 2025-04-07
 ### Corregido
 - Error en la carga de .env
+
+## [Versión 0.2.2] - 2025-04-07
+### Corregido
+- Error en la llamada del endpoint de obtención de usuario a partir del token. (/user/me).
