@@ -46,3 +46,7 @@ asegurar una integridad más robusta del sistema.
 ## [Versión 0.2.2] - 2025-04-07
 ### Corregido
 - Error en la llamada del endpoint de obtención de usuario a partir del token. (/user/me).
+
+## [Versión 0.2.3] - 2025-04-08
+### Corregido
+- Corrección en implementacion de singleton en clase EnvManager
