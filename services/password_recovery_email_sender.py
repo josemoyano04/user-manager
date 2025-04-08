@@ -64,8 +64,13 @@ class PasswordRecoveryEmailSender():
         return code
     
     def load_default_template(self) -> str:
-        default_template_path = EnvManager().get("DEFAULT_TEMPLATE_EMAIL_PATH")
+        import os
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.abspath(os.path.join(current_dir, '..')) 
+         
+        default_template_path = os.path.join(root_dir, EnvManager().get("DEFAULT_TEMPLATE_EMAIL_PATH"))
+        
         with open(default_template_path, encoding= "utf-8") as template:
             file = template.read()
-            
+        
         return file
