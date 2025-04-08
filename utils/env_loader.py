@@ -3,16 +3,16 @@ import dotenv
 
 #TODO documentar
 class EnvManager:
-    __instance = None
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super().__new__(cls)
-        return cls.__instance
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        if not hasattr(self, "__initialized"):
-            self.__initialized = True
+        if not hasattr(self, "_initialized"):
+            self._initialized = True
             
             ENV_PATH = dotenv.find_dotenv(".env")  
             
