@@ -14,7 +14,7 @@ router  = APIRouter(prefix= "/user", tags= ["User methods"])
 
 @router.get("/me")
 async def get_users_me(token: str = Depends(oauth2_schema)):
-    res = await at.get_current_user_controller(token)
+    res = await at.get_current_user_controller(db_conn= DB_CONN, token= token)
     return res
 
 @router.post("/register")
