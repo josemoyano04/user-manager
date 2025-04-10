@@ -1,3 +1,4 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -64,13 +65,15 @@ class PasswordRecoveryEmailSender():
         return code
     
     def load_default_template(self) -> str:
-        import os
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.abspath(os.path.join(current_dir, '..')) 
-         
-        default_template_path = os.path.join(root_dir, EnvManager().get("DEFAULT_TEMPLATE_EMAIL_PATH"))
-        
-        with open(default_template_path, encoding= "utf-8") as template:
-            file = template.read()
-        
-        return file
+        relative_path = os.path.join("..", "templates", "default_email_template.html")
+        template_path = os.path.abspath(os.path.join(current_dir, relative_path))
+
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(f"""Plantilla no encontrada, relative path:{relative_path}, 
+                                    absolute path: {template_path}""")
+            
+        with open(template_path, encoding="utf-8") as file:
+            html = file.read()
+            
+        return html
